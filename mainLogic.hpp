@@ -3,20 +3,26 @@
 #include <string>
 #include <fstream>
 #include <vector>
+#include <Eigen/Dense>
 
-struct 3DPoint {
+struct Point3D { //struct for Point3D
     float x; 
     float y;
     float z; 
 };
 
-struct GDTResult { 
+struct GDTResult { //struct for result
     std::string type;
     float fromErr;
     bool isPassed;
 };
 
-std::vector<3DPoint> readGivenFile(std::string filename) {
+struct Plane { //Plane Calculation Equation (A*x + B*y + C*z + D = 0)
+    float a, b, c, d; 
+}
+
+
+inline std::vector<Point3D> readGivenFile(std::string filename) { //read point from text file.
     
     std::ifstream inFile(filename);
 
@@ -27,7 +33,7 @@ std::vector<3DPoint> readGivenFile(std::string filename) {
 
      
     3DPoint temporaryPoint;
-    vector<3DPoint> points;
+    vector<Point3D> points;
 
     while (inFile >> temporaryPoint.x >> temporaryPoint.y >> temporaryPoint.z) {
         points.push_back(temporaryPoint);
@@ -40,6 +46,85 @@ std::vector<3DPoint> readGivenFile(std::string filename) {
     return points;
 
 } 
+
+inline Point3D CalculateCenteroid(const std::vector<Point3D>& pointList) { //calculate centeroid point values. 
+
+    if (pointList.empty()) {
+        return Point3D(0.0f, 0.0f, 0.0f);
+    }
+
+    int NumOfPoints = pointList.size();
+    float sumOfX = 0.0f;
+    float sumOfY = 0.0f;
+    float sumOfZ = 0.0f;
+
+    for (size_t i=0; i<NumOfPoints; ++i) {
+
+        sumOfX+=pointList[i].x;
+        sumOfY+=pointList[i].y;
+        sumOfZ+=pointList[i].z;
+
+    }
+
+    float CenteroidX = std::round((sumOfX / NumOfPoints) * 1000.0f) / 1000.0f; //for each value to be 3 digits after point (as 0.000)
+    float CenteroidY = std::round((sumOfY / NumOfPoints)* 1000.0f) / 1000.0f;
+    float CenteroidZ = std::round((sumOfZ / NumOfPoints)* 1000.0f) / 1000.0f;
+
+    Point3D CenteroidPoint = Point3D(CenteroidX, CenteroidY, CenteroidZ);
+
+    return CenteroidPoint;
+
+}
+
+inline Point3D normalize(const Point3D& givenVec) { //normalize vactor 
+
+    float vectorLength = std::sqrt(std::pow(givenVec.x, 2) + std::pow(givenVec.y, 2) + std::pow(givenVec.z, 2));
+
+    if (vectorLength < 1e-8f) {
+        return {0.0f , 0.0f, 0.0f};
+    }
+
+    float normalizedX = givenVec.x / vectorLength;
+    float normalizedY = givenVec.y / vectorLength;
+    float normalizedZ = givenVec.z / vectorLength;
+
+    return Point3D(normalizedX, normalizedY, normalizedZ);
+
+}
+
+inline Plane fitPlane(const std::vector<Point3D>& pointList) { //fitPlane calculation
+
+    int ListSize = pointList.size();
+
+    if (size < 3) { //must have 3 or more vector points. 
+        return {0.0f, 0.0f, 1.0f, 0.0f};
+    }
+
+    Point3D Centeroid = CalculateCenteroid(pointList);
+
+    Eigen::Matrix3f CovarianceMatrix = Eigen::Matrix3f::Zero();
+    
+    for (const auto& p: pointList) { //create Covariance Matrix
+
+        Eigen::Vector3f diff(p.x - Centeroid.x, p.y - Centeroid.y, p.z - Centeroid.z);
+        CovarianceMatrix+=diff * diff.transpose();
+
+    }
+
+    Eigen::SelfAdjointEigenSolver<Eigen::Martix3f> eigenSolver(CovarianceMatrix); //find Eigenvalues and EigenVectors
+
+    Eigen::Vector3f normal = eigenSolver.eigenvector().col(0); //take minimal value EigenVector as normal
+
+    normal.normalize(); //normalize the vector to achieve length of 1. 
+
+    float calcD = -(normal[0] * Centeroid.x + normal[1] * Centeroid.y + normal[2] * Centeroid.z); //calculate D with Plane Equation.
+
+    return {normal[0], normal[1], normal[2], calcD}; //return Plane values (Normalized Vector + Calculated D Value.)
+
+}
+
+
+
 
 int main() {
 
