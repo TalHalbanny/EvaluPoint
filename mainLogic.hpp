@@ -123,6 +123,32 @@ inline Plane fitPlane(const std::vector<Point3D>& pointList) { //fitPlane calcul
 
 }
 
+float evaluateFlatness(const std::vector<Point3D>& pointList, const Plane& idealPlane) { //calculate Flatness of the plane 
+
+    if (pointList.empty()) {
+        return 0.0f;
+    }
+
+    float normLen = std::sqrt(idealPlane.a * idealPlane.a + idealPlane.b * idealPlane.b + idealPlane.c * idealPlane.c);
+    if (normLen < 1e-8f) {
+        return 0.0f;
+    }
+
+    float minDist = 1e9f;
+    float maxDist = -1e9f;
+
+    for (const auto& p: pointList) {
+
+        float distanceCal = (idealPlane.a * p.x + idealPlane.b * p.y + idealPlane.c * p.z + idealPlane.d) / normLen;
+
+        if (distanceCal < minDist) { minDist = distanceCal; }
+        if (distanceCal > maxDist) {maxDist = distanceCal; }
+    }
+
+    return maxDist - minDist;
+
+}
+
 
 
 
