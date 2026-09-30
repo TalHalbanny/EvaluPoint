@@ -17,8 +17,12 @@ struct GDTResult { //struct for result
     bool isPassed;
 };
 
-struct Plane { //Plane Calculation Equation (A*x + B*y + C*z + D = 0)
+struct Plane { //Plane struct by Plane Equition
     float a, b, c, d; 
+}
+
+struct Circle { //Circle  struct
+    float xc, yc, radius;
 }
 
 
@@ -92,7 +96,7 @@ inline Point3D normalize(const Point3D& givenVec) { //normalize vactor
 
 }
 
-inline Plane fitPlane(const std::vector<Point3D>& pointList) { //fitPlane calculation
+inline Plane fitPlane(const std::vector<Point3D>& pointList) { //fit optimal plane for point List
 
     int ListSize = pointList.size();
 
@@ -113,13 +117,13 @@ inline Plane fitPlane(const std::vector<Point3D>& pointList) { //fitPlane calcul
 
     Eigen::SelfAdjointEigenSolver<Eigen::Martix3f> eigenSolver(CovarianceMatrix); //find Eigenvalues and EigenVectors
 
-    Eigen::Vector3f normal = eigenSolver.eigenvector().col(0); //take minimal value EigenVector as normal
+    Eigen::Vector3f normal = eigenSolver.eigenvector().col(0); //take minimal value EigenVector as normal (located in col(0) allways with Eigen)
 
     normal.normalize(); //normalize the vector to achieve length of 1. 
 
-    float calcD = -(normal[0] * Centeroid.x + normal[1] * Centeroid.y + normal[2] * Centeroid.z); //calculate D with Plane Equation.
+    float calcD = -(normal[0] * Centeroid.x + normal[1] * Centeroid.y + normal[2] * Centeroid.z); 
 
-    return {normal[0], normal[1], normal[2], calcD}; //return Plane values (Normalized Vector + Calculated D Value.)
+    return {normal[0], normal[1], normal[2], calcD}; 
 
 }
 
@@ -129,7 +133,7 @@ float evaluateFlatness(const std::vector<Point3D>& pointList, const Plane& ideal
         return 0.0f;
     }
 
-    float normLen = std::sqrt(idealPlane.a * idealPlane.a + idealPlane.b * idealPlane.b + idealPlane.c * idealPlane.c);
+    float normLen = std::sqrt(idealPlane.a * idealPlane.a + idealPlane.b * idealPlane.b + idealPlane.c * idealPlane.c);  
     if (normLen < 1e-8f) {
         return 0.0f;
     }
@@ -146,6 +150,33 @@ float evaluateFlatness(const std::vector<Point3D>& pointList, const Plane& ideal
     }
 
     return maxDist - minDist;
+
+}
+
+inline Circle fitCicle(const std::vector<Point3D>& pointList, const Circle& idealCircle) { //fit optimal circle for points list
+
+    if (pointList.size() < 3) {
+        return {0.0f, 0.0f, 0.0,f};
+    }
+
+
+    Point3D PointCenteroid = CalculateCenteroid(pointList);
+
+    float xc = PointCenteroid.x;
+    float yc = PointCenteroid.y;
+
+    float radius = 0.0f;
+
+    for (const auto& p : pointList) {
+
+        float pitaguras = std::sqrt(std::pow(p.x - xc, 2) + std::pow(p.y - xy, 2));
+        radius += pitaguras;
+
+    }
+
+    float avrageRadius = sumRadius / pointsList.size();
+
+    return {xc, yc, avrageRadius};
 
 }
 
