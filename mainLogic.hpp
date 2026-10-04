@@ -5,28 +5,37 @@
 #include <vector>
 #include <Eigen/Dense>
 
-struct Point3D { //struct for Point3D
+//DATA STRACTURES: Point3D, GDTResult, Plane, Circle
+
+struct Point3D { 
     float x; 
     float y;
     float z; 
 };
 
-struct GDTResult { //struct for result
+struct GDTResult { 
     std::string type;
-    float fromErr;
+    float formErr;
     bool isPassed;
 };
 
-struct Plane { //Plane struct by Plane Equition
+struct Plane { 
     float a, b, c, d; 
 }
 
-struct Circle { //Circle  struct
+struct Circle { 
     float xc, yc, radius;
 }
 
+struct Cylinder {
+    Point3D axisPoint;
+    Point3D axisDirection;
+    float radius;
+}
 
-inline std::vector<Point3D> readGivenFile(std::string filename) { //read point from text file.
+//FUNCTION: read points from given txt file
+
+inline std::vector<Point3D> readGivenFile(std::string filename) { 
     
     std::ifstream inFile(filename);
 
@@ -51,7 +60,9 @@ inline std::vector<Point3D> readGivenFile(std::string filename) { //read point f
 
 } 
 
-inline Point3D CalculateCenteroid(const std::vector<Point3D>& pointList) { //calculate centeroid point values. 
+//FUNCTION: calculate centeroid by point list
+
+inline Point3D CalculateCenteroid(const std::vector<Point3D>& pointList) { 
 
     if (pointList.empty()) {
         return Point3D(0.0f, 0.0f, 0.0f);
@@ -80,7 +91,9 @@ inline Point3D CalculateCenteroid(const std::vector<Point3D>& pointList) { //cal
 
 }
 
-inline Point3D normalize(const Point3D& givenVec) { //normalize vactor 
+//FUNCTION: Normalize Vector
+
+inline Point3D normalize(const Point3D& givenVec) { 
 
     float vectorLength = std::sqrt(std::pow(givenVec.x, 2) + std::pow(givenVec.y, 2) + std::pow(givenVec.z, 2));
 
@@ -96,11 +109,23 @@ inline Point3D normalize(const Point3D& givenVec) { //normalize vactor
 
 }
 
-inline Plane fitPlane(const std::vector<Point3D>& pointList) { //fit optimal plane for point List
+//FUNCTION: Vector Cross Multiplication (Mul 2 Vectors)
 
+inline Point3D vectorCrossMul(const 3DPoint& Vec1, const 3DPoint& Vec2) {
+
+    return { Vec1.y * Vec2.z - Vec1.z * Vec2.y, 
+             Vec1.z * Vec2.x - Vec1.x - Vec2.z,
+             Vec1.x * Vec2.y - Vec1.y - Vec2.x };
+
+}
+
+
+//FUNCTION: fit optimal plane 
+
+inline Plane fitPlane(const std::vector<Point3D>& pointList) { 
     int ListSize = pointList.size();
 
-    if (size < 3) { //must have 3 or more vector points. 
+    if (size < 3) {
         return {0.0f, 0.0f, 1.0f, 0.0f};
     }
 
@@ -127,7 +152,9 @@ inline Plane fitPlane(const std::vector<Point3D>& pointList) { //fit optimal pla
 
 }
 
-float evaluateFlatness(const std::vector<Point3D>& pointList, const Plane& idealPlane) { //calculate Flatness of the plane 
+//FUNCTION: calculate flatness of the plane
+
+float evaluateFlatness(const std::vector<Point3D>& pointList, const Plane& idealPlane) {  
 
     if (pointList.empty()) {
         return 0.0f;
@@ -153,7 +180,9 @@ float evaluateFlatness(const std::vector<Point3D>& pointList, const Plane& ideal
 
 }
 
-inline Circle fitCicle(const std::vector<Point3D>& pointList, const Circle& idealCircle) { //fit optimal circle for points list
+//FUNCTION: fit optimal circle for points list
+
+inline Circle fitCicle(const std::vector<Point3D>& pointList) { 
 
     if (pointList.size() < 3) {
         return {0.0f, 0.0f, 0.0,f};
@@ -180,6 +209,28 @@ inline Circle fitCicle(const std::vector<Point3D>& pointList, const Circle& idea
 
 }
 
+//FUNCTION: calculate roundness
+
+inline float EvaluateRoundness(const Circle& C, const std::vector<Point3D>& pointList) {
+    if (pointList.empty()) {
+        return 0.0f;
+    }
+
+    float maxRadius = -1e9f;
+    float minRadius = 1e9f;
+
+    for (const auto& p : pointList) {
+
+        float PointToCirclePitaguras = std::sqrt(std::pow(p.x - C.xc, 2) + std::pow(p.y - C.yc, 2));
+
+        if (PointToCirclePitaguras > maxRadius) { maxRadius = PointToCirclePitaguras}
+        if (PointToCirclePitaguras < minRadius) { minRadius = PointToCirclePitaguras}
+
+    }
+
+    return maxRadius - minRadius;
+
+}
 
 
 
