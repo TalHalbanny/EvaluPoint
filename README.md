@@ -29,3 +29,47 @@ Sample clouds are in `samples/`:
 ## How to run
 
 Open the viewer with the sample cylinder:
+
+```
+gdtevaluator
+```
+
+Open a file in the 3D view:
+
+```
+gdtevaluator cylinder samples/cylinder.txt 0.05
+gdtevaluator square samples/square.txt 0.05
+gdtevaluator sphere samples/sphere.txt 0.05
+gdtevaluator cone samples/cone.txt 0.05
+```
+
+Print a text report and skip the window:
+
+```
+gdtevaluator --report-only cylinder samples/cylinder.txt 0.05
+```
+
+Run the built-in geometry checks:
+
+```
+gdtevaluator --self-test
+```
+
+In the window, drag to orbit, right-drag to pan, and use the wheel to zoom. The side panel opens another point file, switches form, and raises or lowers the tolerance. Keys 1 to 4 select cylinder, square, sphere, and cone.
+
+On startup a small **EvaluPoint 1** window appears while the viewer is set up, then closes.
+
+## Build
+
+Windows, C++17, with OpenGL. From the project folder:
+
+```
+g++ -std=c++17 -O2 -o build/gdtevaluator.exe main.cpp -lcomdlg32 -lglu32 -lopengl32 -lgdi32 -luser32
+```
+
+Or with CMake:
+
+```
+cmake -S . -B build
+cmake --build build
+```
