@@ -59,6 +59,36 @@ In the window, drag to orbit, right-drag to pan, and use the wheel to zoom. The 
 
 On startup a small **EvaluPoint 1** window appears while the viewer is set up, then closes.
 
+## Screenshots
+
+The main window fits the chosen form and draws every measured point. Green points are inside the tolerance zone. Red points are outside it. This square plate fails flatness: 144 points are inside and 2 are outside.
+
+![Main view of a square plate, with two points outside the zone](screenshots/overviewsim.png)
+
+**Open point file** loads a measured cloud. The samples are text files of `x y z` points. Here `square.txt` is selected.
+
+![File dialog with square.txt selected](screenshots/choose_file.png)
+
+The form buttons run a different check on the same points. **Square** is selected, so the check is flatness.
+
+![Square form button selected](screenshots/chooseshape.png)
+
+The **−** and **+** buttons change the tolerance. The pass or fail result updates as soon as the value changes.
+
+![Tolerance value with minus and plus buttons](screenshots/adjust_tol.png)
+
+The check fails when the form error is larger than the tolerance. Flatness 0.2582 is outside a tolerance of 0.0500, so the result is **FAIL**.
+
+![Fail result for flatness above the tolerance](screenshots/fail2.png)
+
+Points that fall outside the zone are listed in red and marked **OUT**.
+
+![Two points marked OUT in the point list](screenshots/fail1.png)
+
+Raising the tolerance until it covers the form error turns the same cloud into a **PASS**. At 0.2610 every point is inside the zone.
+
+![Pass result after the tolerance is raised](screenshots/passexample.png)
+
 ## Build
 
 Windows, C++17, with OpenGL. From the project folder:
